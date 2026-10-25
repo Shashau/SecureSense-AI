@@ -426,9 +426,9 @@ Do not use this tool to perform unauthorized security testing.
 ### SecureSense AI Team
 
 - **Shashank H C**
-- **Sharath**
-- **Vijetha**
-- **Akhilesh**
+- **Sharath V T**
+- **Chandana C**
+- **Akhilesh Gowda K R**
 
 Built for **Hack With Bangalore 4.0** 🚀
 
