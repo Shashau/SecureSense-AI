@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from security.analyzer import analyze_security_headers
+from security.anomaly import detect_anomaly
 import requests
 import time
 
@@ -32,6 +33,10 @@ def scan_api(data: APIRequest):
         response = requests.get(data.url, timeout=10)
         security_analysis = analyze_security_headers(response.headers)
         response_time = round(time.time() - start_time, 3)
+        anomaly_analysis = detect_anomaly(
+    response.status_code,
+    response_time
+)
 
         return {
             "url": data.url,
@@ -50,7 +55,8 @@ def scan_api(data: APIRequest):
                     "Content-Security-Policy"
                 )
             },
-            "security_analysis": security_analysis
+            "security_analysis": security_analysis,
+            "anomaly_analysis": anomaly_analysis
         }
 
     except requests.RequestException as e:
