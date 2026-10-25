@@ -48,3 +48,33 @@ def analyze_security_headers(headers):
         "risk_level": risk_level,
         "findings": findings
     }
+def check_https(url):
+    if url.startswith("https://"):
+        return {
+            "check": "HTTPS",
+            "status": "Secure",
+            "severity": "Low",
+            "message": "API is using HTTPS."
+        }
+    else:
+        return {
+            "check": "HTTPS",
+            "status": "Insecure",
+            "severity": "High",
+            "message": "API is not using HTTPS."
+        }
+def check_server_disclosure(server_header):
+    if not server_header:
+        return {
+            "check": "Server Information Disclosure",
+            "status": "Not Detected",
+            "severity": "Low",
+            "message": "Server header is not exposed."
+        }
+
+    return {
+        "check": "Server Information Disclosure",
+        "status": "Detected",
+        "severity": "Low",
+        "message": f"Server information exposed: {server_header}"
+    }

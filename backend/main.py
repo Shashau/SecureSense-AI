@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from security.analyzer import analyze_security_headers
+from security.analyzer import (
+    analyze_security_headers,
+    check_https,
+    check_server_disclosure
+)
 from security.anomaly import detect_anomaly
 import requests
 import time
@@ -32,6 +36,12 @@ def scan_api(data: APIRequest):
     try:
         response = requests.get(data.url, timeout=10)
         security_analysis = analyze_security_headers(response.headers)
+        https_analysis = check_https(data.url)
+
+        server_analysis = check_server_disclosure(
+        response.headers.get("server")
+        )
+
         response_time = round(time.time() - start_time, 3)
         anomaly_analysis = detect_anomaly(
     response.status_code,
@@ -56,6 +66,8 @@ def scan_api(data: APIRequest):
                 )
             },
             "security_analysis": security_analysis,
+            "https_analysis": https_analysis,
+            "server_analysis": server_analysis,
             "anomaly_analysis": anomaly_analysis
         }
 
