@@ -167,6 +167,29 @@
 </div>
        `).join("")}
     </div>
+           
+
+    <div class="section ai-section">
+        <h2>🤖 AI Security Insight</h2>
+
+        <div class="ai-summary">
+            ${data.ai_analysis.summary}
+        </div>
+
+        <h3>🔎 Analysis</h3>
+
+        ${data.ai_analysis.insights.map(insight => `
+            <div class="ai-insight">
+                ${insight}
+            </div>
+        `).join("")}
+
+        <p>
+            <strong>Recommendations:</strong>
+            ${data.ai_analysis.recommendation_count}
+        </p>
+    </div>
+
     `;
 
             } catch (error) {
