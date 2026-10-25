@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureSense AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+   <div class="container">
+
+    <div class="header">
+        <h1>🛡️ SecureSense AI</h1>
+        <p>Intelligent API Security & Anomaly Detection Platform</p>
+    </div>
+
+    <div class="scan-box">
+        <input
+            type="text"
+            id="urlInput"
+            placeholder="Enter API URL"
+        >
+
+        <button onclick="scanAPI()">
+            🔍 Scan API
+        </button>
+    </div>
+
+    <div id="result">
+
+        <div class="section">
+            <h2>Ready to Scan</h2>
+            <p>
+                Enter an API endpoint above to analyze its
+                security posture and detect anomalies.
+            </p>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        SecureSense AI • API Security & Anomaly Detection
+    </div>
+
+</div>
+
+    <script>
+        async function scanAPI() {
+
+            const url = document.getElementById("urlInput").value;
+            const result = document.getElementById("result");
+
+            if (!url) {
+                result.innerHTML = "<p>Please enter an API URL.</p>";
+                return;
+            }
+
+            result.innerHTML = "<p>Scanning...</p>";
+
+            try {
+
+                const response = await fetch("http://127.0.0.1:8000/scan", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        url: url
+                    })
+                });
+
+                const data = await response.json();
+
+           result.innerHTML = `
+               <div class="cards">
+
+               <div class="card">
+    <h3>🛡️ Security Score</h3>
+
+    <div class="value">
+        ${data.security_analysis.security_score}/100
+    </div>
+
+    <div class="score-bar">
+        <div
+            class="score-fill"
+            style="width: ${data.security_analysis.security_score}%"
+        ></div>
+    </div>
+</div>
+
+              <div class="card">
+    <h3>⚠️ Risk Level</h3>
+
+    <div
+        class="value risk-${data.security_analysis.risk_level.toLowerCase()}"
+    >
+        ${data.security_analysis.risk_level}
+    </div>
+</div>
+
+            <div class="card">
+            <h3>🔒 HTTPS</h3>
+            <div class="value">
+                ${data.https_analysis.status}
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>⚡ Response Time</h3>
+            <div class="value">
+                ${data.response_time}s
+            </div>
+        </div>
+
+    </div>
+
+    <div class="section">
+        <h2>📊 API Information</h2>
+        <p><strong>URL:</strong> ${data.url}</p>
+        <p><strong>Status Code:</strong> ${data.status_code}</p>
+        <p><strong>Content Type:</strong> ${data.content_type}</p>
+        <p><strong>Server:</strong> ${data.server || "Not disclosed"}</p>
+    </div>
+
+    <div class="section">
+        <h2>🚨 Anomaly Detection</h2>
+
+        ${
+            data.anomaly_analysis.anomaly_detected
+            ? data.anomaly_analysis.anomalies.map(anomaly => `
+                <div class="anomaly">
+                    <strong>${anomaly.type}</strong>
+                    <p>${anomaly.message}</p>
+                    <small>Severity: ${anomaly.severity}</small>
+                </div>
+            `).join("")
+            : `<p class="success">✓ No anomalies detected</p>`
+        }
+    </div>
+
+    <div class="section">
+        <h2>🛡️ Security Findings</h2>
+
+        ${data.security_analysis.findings.map(finding => `
+            <div class="finding">
+    <div class="finding-title">
+        🛡️ ${finding.header}
+    </div>
+
+    <div class="finding-status">
+        Status:
+        <strong>${finding.status}</strong>
+    </div>
+
+    <div class="finding-severity">
+        Severity:
+        <strong>${finding.severity}</strong>
+    </div>
+
+    <div class="recommendation">
+        💡 <strong>Recommendation:</strong>
+        ${finding.recommendation}
+    </div>
+</div>
+       `).join("")}
+    </div>
+    `;
+
+            } catch (error) {
+
+                result.innerHTML = `
+                    <p>❌ Could not connect to SecureSense AI backend.</p>
+                    <p>${error}</p>
+                `;
+            }
+        }
+    </script>
+
+</body>
+</html>
