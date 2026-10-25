@@ -22,6 +22,20 @@ def detect_anomaly(status_code, response_time):
             "message": "API rate limit may have been triggered."
         })
 
+    if 300 <= status_code < 400:
+        anomalies.append({
+            "type": "Redirect",
+            "severity": "Low",
+            "message": "API returned a redirect response."
+        })
+
+    if 400 <= status_code < 500:
+        anomalies.append({
+            "type": "Client Error",
+            "severity": "Medium",
+            "message": "API returned a client-side error."
+        })
+
     return {
         "anomaly_detected": len(anomalies) > 0,
         "anomalies": anomalies
