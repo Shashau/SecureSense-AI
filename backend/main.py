@@ -1,14 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
 from security.analyzer import (
     analyze_security_headers,
     check_https,
     check_server_disclosure
 )
 from security.anomaly import detect_anomaly
+from security.ai_analysis import generate_security_insight
+
 import requests
 import time
+
 
 app = FastAPI(
     title="SecureSense AI",
@@ -16,14 +20,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://securesense-ai-1.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
 )
-
 
 class APIRequest(BaseModel):
     url: str
@@ -44,25 +48,48 @@ def scan_api(data: APIRequest):
 
     try:
         response = requests.get(data.url, timeout=10)
-        security_analysis = analyze_security_headers(response.headers)
-        https_analysis = check_https(data.url)
 
-        server_analysis = check_server_disclosure(
-        response.headers.get("server")
+        security_analysis = analyze_security_headers(
+            response.headers
         )
 
-        response_time = round(time.time() - start_time, 3)
+        https_analysis = check_https(
+            data.url
+        )
+
+        server_analysis = check_server_disclosure(
+            response.headers.get("server")
+        )
+
+        response_time = round(
+            time.time() - start_time,
+            3
+        )
+
         anomaly_analysis = detect_anomaly(
-    response.status_code,
-    response_time
-)
+            response.status_code,
+            response_time
+        )
+
+        ai_analysis = generate_security_insight(
+            security_analysis["security_score"],
+            security_analysis["risk_level"],
+            https_analysis["status"],
+            security_analysis["findings"],
+            anomaly_analysis["anomalies"]
+        )
 
         return {
             "url": data.url,
             "status_code": response.status_code,
             "response_time": response_time,
-            "content_type": response.headers.get("content-type"),
-            "server": response.headers.get("server"),
+            "content_type": response.headers.get(
+                "content-type"
+            ),
+            "server": response.headers.get(
+                "server"
+            ),
+
             "security_headers": {
                 "X-Content-Type-Options": response.headers.get(
                     "X-Content-Type-Options"
@@ -74,10 +101,12 @@ def scan_api(data: APIRequest):
                     "Content-Security-Policy"
                 )
             },
+
             "security_analysis": security_analysis,
             "https_analysis": https_analysis,
             "server_analysis": server_analysis,
-            "anomaly_analysis": anomaly_analysis
+            "anomaly_analysis": anomaly_analysis,
+            "ai_analysis": ai_analysis
         }
 
     except requests.RequestException as e:
